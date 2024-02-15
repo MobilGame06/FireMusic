@@ -7,20 +7,22 @@ const client = new Client({
 });
 
 client.lavalink = new LavalinkManager({
-  nodes: [
-    { // Important to have at least 1 node
-      authorization: "youshallnotpass",
-      host: "borneo.alfari.id",
-      port: 39001,
-      id: "testnode"
-  }
-  ],
-  sendToShard: (guildId, payload) =>
-        client.guilds.cache.get(guildId)?.shard?.send(payload),
+    nodes: [
+        {
+            host: 'url',
+            port: 27000,
+            authorization: 'pass',
+            secure: false
+          }
+    ],
+    sendToShard: (guildId, payload) =>
+      client.guilds.cache.get(guildId)?.shard?.send(payload),
     client: {
-        id: process.env.CLIENT_ID, username: "TESTBOT",
+      id: process.env.CLIENT_ID, 
+      username: "TESTBOT",
     },
-});
+  });
+  
 
 module.exports = client;
 
