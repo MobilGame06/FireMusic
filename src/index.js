@@ -1,19 +1,22 @@
 require("dotenv").config();
 const { LavalinkManager } = require("lavalink-client");
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
+const { nodes } = require('../lavaConfig.js');
 
 const client = new Client({
     intents: [32767]
 });
 
+console.log(nodes)
+
 client.lavalink = new LavalinkManager({
     nodes: [
-        {
-            host: 'url',
-            port: 27000,
-            authorization: 'pass',
-            secure: false
-          }
+      {
+        host: nodes.host,
+        port: parseInt(nodes.port),
+        authorization: nodes.authenticaion,
+        secure: nodes.secure
+      }
     ],
     sendToShard: (guildId, payload) =>
       client.guilds.cache.get(guildId)?.shard?.send(payload),
