@@ -19,7 +19,7 @@ function simpleEmbed(content, ephemeral, client) {
         .setDescription(content)
         .setColor("#ff0000")
         .setTimestamp() 
-        .setFooter({ text: 'FireMusic', iconURL: client.user.displayAvatarURL() })
+        .setFooter({ text: 'FireMusic', iconURL: client.user.displayAvatarURL() }) 
     ],
     ephemeral: ephemeral
   }

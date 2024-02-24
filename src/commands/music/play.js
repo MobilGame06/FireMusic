@@ -1,5 +1,5 @@
 const { ApplicationCommandOptionType, MessageEmbed } = require("discord.js");
-const { processPlayResult, updatePlayer } = require("../../utilities/lavalink.js");
+const { processPlayResult, updatePlayer, addMusicControls } = require("../../utilities/lavalink.js");
 const { loadChecks, playChecks } = require("../../utilities/checks.js");
 
 module.exports = {
@@ -42,7 +42,7 @@ module.exports = {
 
     updatePlayer(player, interaction.guild.id, interaction.client); // Übergeben Sie interaction.client als Argument
     const message = await interaction.editReply({ embeds: [embed] });
-    //await addMusicControls(message, player);
+    await addMusicControls(message, player);
 
   }
 };

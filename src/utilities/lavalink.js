@@ -1,4 +1,5 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonComponent, ButtonInteraction, ButtonStyle, } = require("discord.js");
+const { errorEmbed, simpleEmbed } = require("../utilities/embeds.js");
 const LoadTypes = {
     track: 'track',
     playlist: 'playlist',
@@ -90,11 +91,103 @@ function simplifyPlayer(player) {
   }
 
 
+
+async function addMusicControls(message, player){
+    const previousButton = new ButtonBuilder()
+      .setCustomId('previous')
+      .setEmoji('⏮️')
+      .setStyle(ButtonStyle.Secondary)
+    const pauseButton = new ButtonBuilder()
+      .setCustomId('pause')
+      .setEmoji('⏯')
+      .setStyle(ButtonStyle.Secondary)
+    const skipButton = new ButtonBuilder()
+      .setCustomId('skip')
+      .setEmoji('⏭️')
+      .setStyle(ButtonStyle.Secondary)
+    const stopButton = new ButtonBuilder()
+      .setCustomId('stop')
+      .setEmoji('⏹️')
+      .setStyle(ButtonStyle.Secondary)
+  
+
+    const actionRow = new ActionRowBuilder()
+    await message.edit({
+      components: [
+        actionRow.setComponents([
+          previousButton,
+          pauseButton,
+          skipButton,
+          stopButton
+        ])
+      ]
+    })
+  
+    const collector = message.createMessageComponentCollector({ idle: 300000 })
+    collector.on('collect', async (buttonInteraction) => {
+      if (buttonInteraction.member.voice.channel?.id !== player.voiceChannelId) {
+        await buttonInteraction.reply(errorEmbed('You need to be in the same voice channel as the bot to use this command!', true))
+        return
+      }
+  
+      switch (buttonInteraction.customId) {
+        case 'previous': {
+          if (player.position > 5000) {
+            await player.seek(0)
+            await buttonInteraction.deferUpdate()
+            break
+          }
+          try {
+            if (player.queue.previous.length === 0) {
+              await buttonInteraction.reply(errorEmbed('You can\'t use the command `/previous` right now!', true))
+              return
+            }
+            const track = player.queue.previous.shift()
+            await player.play({ track: track })
+            await player.queue.add(player.queue.previous.shift(), 0)
+            await buttonInteraction.reply(simpleEmbed(`⏮️ Playing previous track \`#0\`: **${track.info.title}**.`, true, message.client))
+          } catch (e) {
+            await player.seek(0)
+            await buttonInteraction.deferUpdate()
+          }
+          break
+        }
+        case 'pause': {
+          player.paused ? await player.resume() : await player.pause()
+          await buttonInteraction.reply(simpleEmbed(player.paused ? '⏸️ Paused.' : '▶️ Resumed.', true, message.client))
+          break
+        }
+        case 'skip': {
+          if (player.queue.tracks.length === 0) {
+            await player.destroy()
+            await buttonInteraction.reply(simpleEmbed('⏹️ Stopped', true, message.client))
+            break
+          }
+          await player.skip()
+          await buttonInteraction.reply(simpleEmbed('⏭️ Skipped', true, message.client))
+          break
+        }
+        case 'stop': {
+          await player.destroy()
+          await buttonInteraction.reply(simpleEmbed('⏹️ Stopped', true, message.client))
+          break
+        }
+      }
+      updatePlayer(player)
+    })
+    collector.on('end', async () => {
+      const fetchedMessage = await message.fetch(true).catch((e) => { logging.warn(`Failed to edit message components: ${e}`) })
+      if (!fetchedMessage) { return }
+      await fetchedMessage.edit({ components: [new ActionRowBuilder().setComponents(fetchedMessage.components[0].components.map((component) => ButtonBuilder.from(component.toJSON()).setDisabled(true)))] })
+    })
+  }
+
 module.exports = {
     processPlayResult,
     simplifyPlayer,
     updatePlayer,
     LoadTypes,
     msToHMS,
-    durationOrLive
+    durationOrLive,
+    addMusicControls
 }
