@@ -7,8 +7,6 @@ const client = new Client({
     intents: [32767]
 });
 
-console.log(nodes)
-
 client.lavalink = new LavalinkManager({
     nodes: [
       {
