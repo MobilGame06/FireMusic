@@ -14,7 +14,7 @@ module.exports = {
     const player = interaction.client.lavalink.getPlayer(interaction.guild.id)
 
     player.queue.splice(0, player.queue.tracks.length)
-    await interaction.editReply(simpleEmbed('🗑️ Cleared the queue.', true, interaction.client))
+    await interaction.editReply(simpleEmbed('Cleared the queue.', true, interaction.client))
     updatePlayer(player)
   }
 };
