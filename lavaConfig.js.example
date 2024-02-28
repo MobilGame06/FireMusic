@@ -1,0 +1,11 @@
+const nodes = {
+    host: 'host',
+    port: 27000,
+    authenticaion: 'auth',
+    secure: false
+
+}
+
+module.exports = {
+    nodes
+}
