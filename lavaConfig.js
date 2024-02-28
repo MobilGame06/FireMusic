@@ -1,7 +1,7 @@
 const nodes = {
-    host: 'HOST',
+    host: 'loox.kreikels.space',
     port: 27000,
-    authenticaion: 'AUTH',
+    authenticaion: 'betterVenusBot',
     secure: false
 
 }
