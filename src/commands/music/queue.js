@@ -1,8 +1,6 @@
 const { ApplicationCommandOptionType, MessageEmbed, EmbedBuilder } = require("discord.js");
 const { pagination, ButtonTypes, ButtonStyles } = require('@devraelfreeze/discordjs-pagination')
-const { processPlayResult, updatePlayer } = require("../../utilities/lavalink.js");
-const { loadChecks, playChecks } = require("../../utilities/checks.js");
-const { errorEmbed, simpleEmbed } = require("../../utilities/embeds.js");
+const { genericChecks } = require("../../utilities/checks.js");
 
 
 const ITEMS_PER_PAGE = 20
@@ -13,12 +11,8 @@ module.exports = {
   inVc: true,
   sameVc: true,
   run: async (client, interaction) => {
-    //if (!genericChecks(interaction)) { return }
+    if (!genericChecks(interaction)) { return }
     const player = interaction.client.lavalink.getPlayer(interaction.guild.id)
-    if(player.queue.tracks.length < 1){
-        await interaction.editReply(simpleEmbed('There are no songs in the queue.', true, interaction.client));
-        return;
-    }
 
     const queue = player.queue
     const songs = queue.tracks.length

@@ -2,6 +2,23 @@ const { ChatInputCommandInteraction, PermissionsBitField } = require("discord.js
 const { LoadTypes } = require("./lavalink");
 const { errorEmbed } = require("../utilities/embeds.js");
 
+
+function genericChecks(interaction) {
+  const player = interaction.client.lavalink.getPlayer(interaction.guild.id)
+
+
+  if (!interaction.member.voice.channel) {
+    interaction.editReply(errorEmbed('You need to be in the same voice channel as the bot to use this command!', true))
+    return false
+  }
+  if (!player || !player.queue.current) {
+    interaction.editReply(errorEmbed('There is no song playing.'))
+    return false
+  }
+
+  return true
+}
+
 function loadChecks(interaction, result) {
     if (result.loadType === LoadTypes.error) {
       interaction.editReply(errorEmbed('There was an error while adding your song to the queue.'))
@@ -36,6 +53,7 @@ function loadChecks(interaction, result) {
   }
 
   module.exports = {
+    genericChecks,
     loadChecks,
     playChecks
   }
