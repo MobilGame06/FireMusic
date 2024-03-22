@@ -123,7 +123,7 @@ async function addMusicControls(message, player){
       ]
     })
   
-    const collector = message.createMessageComponentCollector({ idle: 300000 })
+    const collector = message.createMessageComponentCollector({ idle: 18000000 })
     collector.on('collect', async (buttonInteraction) => {
       if (buttonInteraction.member.voice.channel?.id !== player.voiceChannelId) {
         await buttonInteraction.reply(errorEmbed('You need to be in the same voice channel as the bot to use this command!', true))

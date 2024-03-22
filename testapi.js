@@ -13,6 +13,7 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
+
 rl.question('Search (s=): ', (searchQuery) => {
   rl.close();
   searchQuery = searchQuery
