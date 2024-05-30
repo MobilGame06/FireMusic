@@ -24,7 +24,7 @@ module.exports = {
     const radioResult = await searchRadio(query);
 
     if (radioResult.length === 0) {
-      await interaction.reply({ content: "No radio stations found.", ephemeral: true });
+      await interaction.editReply({ content: "No radio stations found.", ephemeral: true });
       return;
     }
 
