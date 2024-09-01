@@ -1,6 +1,7 @@
 require("dotenv").config();
+
 const axios = require('axios');
-function getKey () {
+function getKey() {
     const keya = parseInt(process.env.KEY_A, 16);
     const keyb = parseInt(process.env.KEY_B, 16);
 
