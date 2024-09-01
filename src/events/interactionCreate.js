@@ -3,11 +3,13 @@ const client = require("../index");
 client.on("interactionCreate", async (interaction) => {
   // Slash Command Handling
   if (interaction.isChatInputCommand()) {
-    await interaction.deferReply({ ephemeral: false }).catch(() => { });
-
     const cmd = client.slashCommands.get(interaction.commandName);
-    if (!cmd)
-      return interaction.followUp({ content: "An error has occurred " });
+    if (!cmd) return interaction.followUp({ content: "An error has occurred " });
+
+    // Check if the command needs deferment
+    if (cmd.deferReply !== false) {
+      await interaction.deferReply({ ephemeral: false }).catch(() => { });
+    }
 
     const args = [];
 
