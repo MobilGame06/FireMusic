@@ -18,8 +18,8 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
     
-    - name: connect, pull, and restart
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && pm2 restart 1 && exit"
+    - name: connect, force pull, and restart
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git reset --hard && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && pm2 restart 1 && exit"
     
     - name: cleanup
       run: rm -rf ~/.ssh
