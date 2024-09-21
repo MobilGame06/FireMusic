@@ -4,28 +4,29 @@ const { Client, Collection, GatewayIntentBits } = require("discord.js");
 const { nodes } = require('../lavaConfig.js');
 
 const client = new Client({
-    intents: [32767]
+  intents: [32767]
 });
 
 client.lavalink = new LavalinkManager({
-    nodes: [
-      {
-        host: nodes.host,
-        port: parseInt(nodes.port),
-        authorization: nodes.authenticaion,
-        secure: nodes.secure
-      }
-    ],
-    sendToShard: (guildId, payload) =>
-      client.guilds.cache.get(guildId)?.shard?.send(payload),
-    client: {
-      id: process.env.CLIENT_ID, 
-      username: "TESTBOT",
-    },
-  });
-  
+  nodes: [
+    {
+      host: nodes.host,
+      port: parseInt(nodes.port),
+      authorization: nodes.authenticaion,
+      secure: nodes.secure
+    }
+  ],
+  sendToShard: (guildId, payload) =>
+    client.guilds.cache.get(guildId)?.shard?.send(payload),
+  client: {
+    id: process.env.CLIENT_ID,
+    username: "TESTBOT",
+  },
+});
+
 
 module.exports = client;
+
 
 // Global Variables
 client.commands = new Collection();

@@ -69,7 +69,7 @@ client.on('interactionCreate', async (interaction) => {
     const embed = new EmbedBuilder()
       .setColor('#FF0000')
       .setTitle('Please select a radio station')
-      .addFields({ name: 'Powered By:', value: '[RadioFM](https://www.radiofm.com)' })
+      .addFields({ name: 'Powered By:', value: '[FmStream](http://fmstream.org/)' })
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });

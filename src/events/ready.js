@@ -1,6 +1,6 @@
 const client = require("../index");
 var colors = require('colors');
-const {ActivityType } = require('discord.js');
+const { ActivityType } = require('discord.js');
 
 
 client.on("raw", d => client.lavalink.sendRawData(d));
