@@ -19,7 +19,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
 
       - name: connect, force pull, npm install, and restart
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git reset --hard && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && npm install && pm2 restart 1 && exit"
+        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git reset --hard && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && npm install && pm2 restart  ${{ secrets.PM2_ID }} && exit"
 
       - name: cleanup
         run: rm -rf ~/.ssh
