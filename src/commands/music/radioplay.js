@@ -102,7 +102,8 @@ client.on('interactionCreate', async (interaction) => {
     const embed = await processPlayResult(player, result, interaction.client, "Radio");
 
     updatePlayer(player, interaction.guild.id, interaction.client);
-    const message = await interaction.update({ embeds: [embed], components: [], ephemeral: true });
+    await interaction.deferReply({ ephemeral: false })
+    const message = await interaction.editReply({ embeds: [embed], components: [] });
     await addStopButton(message, player);
   }
 });
