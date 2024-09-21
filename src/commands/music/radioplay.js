@@ -1,5 +1,5 @@
 const { EmbedBuilder, ComponentType, ActionRowBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle, ModalBuilder } = require("discord.js");
-const { processPlayResult, updatePlayer, addMusicControls } = require("../../utilities/lavalink.js");
+const { processPlayResult, updatePlayer, addStopButton } = require("../../utilities/lavalink.js");
 const { loadChecks, playChecks } = require("../../utilities/checks.js");
 const { searchRadio } = require("../../utilities/radioApi.js");
 const client = require("../..//index");
@@ -102,6 +102,7 @@ client.on('interactionCreate', async (interaction) => {
     const embed = await processPlayResult(player, result, interaction.client, "Radio");
 
     updatePlayer(player, interaction.guild.id, interaction.client);
-    await interaction.reply({ embeds: [embed], components: [], ephemeral: false });
+    const message = await interaction.update({ embeds: [embed], components: [], ephemeral: true });
+    await addStopButton(message, player);
   }
 });

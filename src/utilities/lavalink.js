@@ -95,7 +95,34 @@ function updatePlayer(player, guildId) {
   })
 }
 
+async function addStopButton(message, player) {
+  const stopButton = new ButtonBuilder()
+    .setCustomId('stop')
+    .setEmoji('⏹️')
+    .setStyle(ButtonStyle.Secondary)
 
+  const actionRow = new ActionRowBuilder()
+  await message.edit({
+    components: [
+      actionRow.setComponents([
+        stopButton
+      ])
+    ]
+  })
+
+  const collector = message.createMessageComponentCollector({ idle: 18000000 })
+  collector.on('collect', async (buttonInteraction) => {
+    if (buttonInteraction.member.voice.channel?.id !== player.voiceChannelId) {
+      await buttonInteraction.reply(errorEmbed('You need to be in the same voice channel as the bot to use this command!', true))
+      return
+    }
+    if (buttonInteraction.customId === 'stop') {
+      await player.destroy()
+      await buttonInteraction.reply(simpleEmbed('⏹️ Stopped', true, message.client))
+    }
+
+  })
+}
 
 async function addMusicControls(message, player) {
   const previousButton = new ButtonBuilder()
@@ -194,5 +221,6 @@ module.exports = {
   LoadTypes,
   msToHMS,
   durationOrLive,
-  addMusicControls
+  addMusicControls,
+  addStopButton
 }
