@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - lavalink-dev
+      - lavalink-main
   workflow_dispatch:
 
 jobs:
