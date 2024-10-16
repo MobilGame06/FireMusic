@@ -19,11 +19,9 @@ module.exports = {
 
         const track = player.queue.current;
 
-        const cleanedTitle = track.info.title.replace(/\s*\([^)]*\)/g, "").trim();
-
         const options = {
             apiKey: process.env.GENIUS_API_KEY,
-            title: cleanedTitle,
+            title: track.info.title,
             artist: track.info.author,
             optimizeQuery: true
         };
