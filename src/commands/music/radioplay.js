@@ -1,4 +1,4 @@
-const { EmbedBuilder, ComponentType, ActionRowBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle, ModalBuilder } = require("discord.js");
+const { EmbedBuilder, ComponentType, ActionRowBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle, ModalBuilder, MessageFlags  } = require("discord.js");
 const { processPlayResult, updatePlayer, addStopButton } = require("../../utilities/lavalink.js");
 const { loadChecks, playChecks } = require("../../utilities/checks.js");
 const { searchRadio } = require("../../utilities/radioApi.js");
@@ -46,7 +46,7 @@ client.on('interactionCreate', async (interaction) => {
     const radioResult = await searchRadio(radioName);
 
     if (radioResult.length === 0) {
-      await interaction.reply({ content: "No radio stations found.", ephemeral: true });
+      await interaction.reply({ content: "No radio stations found.", flags: MessageFlags.Ephemeral});
       return;
     }
 
