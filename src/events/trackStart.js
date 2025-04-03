@@ -1,7 +1,45 @@
 const client = require("../index");
-const {updatePlayer, addMusicControls } = require("../utilities/lavalink.js");
-const { errorEmbed, simpleEmbed } = require("../utilities/embeds.js");
+const {addMusicControls} = require("../utilities/lavalink.js");
+const {EmbedBuilder} = require("discord.js");
+const {msToHMS} = require("../utilities/lavalink");
 
-client.lavalink.on("trackStart", (player, track) => {
-    console.log(`[Lavalink] Track started: ${track.info.title} - ${track.info.author} - ${track.info.uri}`)
+client.lavalink.on("trackStart", async (player, track) => {
+    //get channel where the bot is connected
+    const guild = client.guilds.cache.get(player.guildId);
+
+    if (!guild) {
+        console.warn(`[Lavalink] Guild not found for player: ${player.guildId}`);
+        return;
+    } else {
+
+        const botVoiceState = guild.members.me.voice;
+        if (!botVoiceState.channel) {
+            return;
+        }
+        const channelId = botVoiceState.channel.id;
+
+        const track = player.queue.current
+        const trackInfo = track.info
+
+        const embed = new EmbedBuilder()
+            .setAuthor({name: 'Now Playing...', iconURL: guild.members.me.displayAvatarURL()})
+            .setTitle(trackInfo.title)
+            .setURL(trackInfo.uri)
+            .setColor("#ff0000")
+            .setThumbnail(trackInfo.artworkUrl)
+            .addFields([
+                {
+                    name: 'Duration',
+                    value: trackInfo.isStream ? '🔴 Live' : `${msToHMS(trackInfo.duration)}`,
+                    inline: true
+                },
+                {name: 'Author', value: trackInfo.author, inline: true},
+                {name: 'Requested By', value: track.requester.toString(), inline: true}
+            ])
+
+        const message = await guild.channels.cache.get(channelId).send({embeds: [embed]})
+        await addMusicControls(message, player)
+    }
+
+    console.log(`[Lavalink] Track started: ${track.info.title} - ${track.info.author} - ${track.info.uri} on discord server ${player.guildId}`);
 })
