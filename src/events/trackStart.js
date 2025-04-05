@@ -6,7 +6,13 @@ const {msToHMS} = require("../utilities/lavalink");
 client.lavalink.on("trackStart", async (player, track) => {
     //get channel where the bot is connected
     const guild = client.guilds.cache.get(player.guildId);
+    const loopMode = player.repeatMode
 
+    console.log(`[Lavalink] Track started: ${track.info.title} - ${track.info.author} - ${track.info.uri} on discord server ${player.guildId}`);
+
+    if (loopMode !== 'off'){
+        return;
+    }
     if (!guild) {
         console.warn(`[Lavalink] Guild not found for player: ${player.guildId}`);
         return;
@@ -40,6 +46,4 @@ client.lavalink.on("trackStart", async (player, track) => {
         const message = await guild.channels.cache.get(channelId).send({embeds: [embed]})
         await addMusicControls(message, player)
     }
-
-    console.log(`[Lavalink] Track started: ${track.info.title} - ${track.info.author} - ${track.info.uri} on discord server ${player.guildId}`);
 })

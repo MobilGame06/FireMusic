@@ -19,8 +19,16 @@ module.exports = {
     const tracks = queue.tracks.map((track, i) => `**${i + 1}.** [${track.info.title}](${track.info.uri})`).join('\n');
     const pages = []
 
+    if (queue.tracks.length === 0) {
+        const embed = new EmbedBuilder()
+            .setTitle('Queue')
+            .setColor('#ff0000')
+            .setDescription(`Now playing: ${queue.current.info.title}\n\n${tracks}`)
+            .setFooter({ text: `Page 1 of 1` })
+            .setTimestamp()
+        pages.push(embed)
+    }
 
-    
     for(let i = 0; i < Math.ceil(queue.tracks.length / ITEMS_PER_PAGE); i++){
         const startIndex = i * ITEMS_PER_PAGE
         const endIndex = startIndex + ITEMS_PER_PAGE
