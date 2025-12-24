@@ -3,12 +3,14 @@ const { glob } = require("glob");
 const colors = require("colors");
 const path = require("path");
 
+const isDev = process.env.APP_ENV === "dev";
+
 module.exports = async (client) => {
   console.log("-".repeat(45).yellow);
 
   // Slash Commands
   const slashCommands = await glob(`${process.cwd()}/src/commands/**/*.js`);
-  console.log("Found slash command files:", slashCommands);
+  if (isDev) console.log("Found slash command files:", slashCommands);
 
   const arrayOfSlashCommands = slashCommands.map((value) => {
     const filePath = path.resolve(value);
@@ -29,7 +31,7 @@ module.exports = async (client) => {
   console.log("-".repeat(45).yellow);
 
   // Events
-  const eventFiles = await glob(`${process.cwd()}/events/events/*.js`);
+  const eventFiles = await glob(`${process.cwd()}/src/events/*.js`);
   eventFiles.forEach((value) => {
     const filePath = path.resolve(value);
     const file = require(filePath);
@@ -49,5 +51,7 @@ module.exports = async (client) => {
     console.log(
       `[SlashCommandSystem] Registered ${client.slashCommands.size} slash commands`.green
     );
+    console.log('-'.repeat(45).yellow);
+    console.log("🔥 Welcome to FireMusic 🔥".bold.brightMagenta);
   });
 };
