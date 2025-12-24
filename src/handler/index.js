@@ -29,7 +29,7 @@ module.exports = async (client) => {
   console.log("-".repeat(45).yellow);
 
   // Events
-  const eventFiles = await glob(`${process.cwd()}/events/events/*.js`);
+  const eventFiles = await glob(`${process.cwd()}/src/events/*.js`);
   eventFiles.forEach((value) => {
     const filePath = path.resolve(value);
     const file = require(filePath);
