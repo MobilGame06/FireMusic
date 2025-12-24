@@ -1,6 +1,20 @@
 const { genericChecks } = require("../../utilities/checks.js");
 const { simpleEmbed } = require("../../utilities/embeds.js");
-const { getLyrics, getSong } = require("genius-lyrics-api");
+const { getLyrics } = require("genius-lyrics-api");
+
+function cleanMeta(str = "") {
+    return str
+        .replace(/\(.*?\)/g, "")
+        .replace(/\[.*?]/g, "")
+        .replace(/official\s*(music)?\s*video/gi, "")
+        .replace(/lyrics?/gi, "")
+        .replace(/audio/gi, "")
+        .replace(/HD|4K/gi, "")
+        .replace(/full\s*song/gi, "")
+        .replace(/feat\.?|ft\.?/gi, "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+}
 
 module.exports = {
     name: "lyrics",
@@ -8,29 +22,57 @@ module.exports = {
     inVc: true,
     sameVc: true,
     run: async (client, interaction) => {
-        if (!genericChecks(interaction)) {
-            return;
-        }
-        const player = interaction.client.lavalink.getPlayer(interaction.guild.id);
+        if (!genericChecks(interaction)) return;
 
-        if (!player.queue.current) {
-            return await interaction.editReply(simpleEmbed('There is no song playing.', true, interaction.client));
+        const player = interaction.client.lavalink.getPlayer(interaction.guild.id);
+        if (!player?.queue?.current) {
+            return interaction.editReply(
+                simpleEmbed("There is no song playing.", true, interaction.client)
+            );
         }
 
         const track = player.queue.current;
 
-        const options = {
+        const rawTitle = track.info?.title || "";
+        const rawArtist = track.info?.author || "";
+
+        const title = cleanMeta(rawTitle);
+        const artist = cleanMeta(rawArtist);
+
+        const baseOptions = {
             apiKey: process.env.GENIUS_API_KEY,
-            title: track.info.title,
-            artist: track.info.author,
             optimizeQuery: true
         };
 
-        const lyrics = await getLyrics(options);
+        let lyrics = await getLyrics({
+            ...baseOptions,
+            title,
+            artist
+        }).catch(() => null);
 
         if (!lyrics) {
-            return await interaction.editReply(simpleEmbed('Lyrics not found.', true, interaction.client));
+            lyrics = await getLyrics({
+                ...baseOptions,
+                title
+            }).catch(() => null);
         }
-        await interaction.editReply(simpleEmbed(lyrics, true, interaction.client));
-    },
-}
+
+        if (!lyrics) {
+            const shortTitle = title.split("-")[0].split("|")[0].trim();
+            if (shortTitle && shortTitle.length >= 3 && shortTitle !== title) {
+                lyrics = await getLyrics({
+                    ...baseOptions,
+                    title: shortTitle
+                }).catch(() => null);
+            }
+        }
+
+        if (!lyrics) {
+            return interaction.editReply(
+                simpleEmbed("Lyrics not found.", true, interaction.client)
+            );
+        }
+
+        return interaction.editReply(simpleEmbed(lyrics, true, interaction.client));
+    }
+};
