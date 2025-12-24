@@ -1,25 +1,18 @@
+name: Deploy FireMusic
+
 on:
   push:
     branches:
       - lavalink-main
-  workflow_dispatch:
 
 jobs:
-  run_pull:
-    name: run pull
+  restart:
     runs-on: ubuntu-latest
-
     steps:
-      - name: install ssh keys
-        # check this thread to understand why it's needed:
-        # https://stackoverflow.com/a/70447517
+      - name: Restart Pterodactyl Server
         run: |
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-
-      - name: connect, force pull, npm install, and restart
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git reset --hard && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && npm install && pm2 restart  ${{ secrets.PM2_ID }} && exit"
-
-      - name: cleanup
-        run: rm -rf ~/.ssh
+          curl -X POST \
+            "${{ secrets.PTERO_PANEL_URL }}/api/client/servers/${{ secrets.PTERO_SERVER_ID }}/power" \
+            -H "Authorization: Bearer ${{ secrets.PTERO_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            --data '{"signal":"restart"}'

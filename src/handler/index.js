@@ -1,48 +1,53 @@
 require("dotenv").config();
 const { glob } = require("glob");
-const { promisify } = require("util");
-var colors = require('colors');
-// const mongoose = require("mongoose");
-const globPromise = promisify(glob);
-
+const colors = require("colors");
+const path = require("path");
 
 module.exports = async (client) => {
   console.log("-".repeat(45).yellow);
+
   // Slash Commands
-  const slashCommands = await globPromise(
-    `${process.cwd()}/src/commands/**/*.js`
-  );
+  const slashCommands = await glob(`${process.cwd()}/src/commands/**/*.js`);
+  console.log("Found slash command files:", slashCommands);
+
   const arrayOfSlashCommands = slashCommands.map((value) => {
-    const file = require(value);
-    const splitted = value.split("/");
-    const directory = splitted[splitted.length - 2];
+    const filePath = path.resolve(value);
+    const file = require(filePath);
+
+    const directory = path.basename(path.dirname(filePath));
+
     if (!file?.name) return;
     const properties = { directory, ...file };
     client.slashCommands.set(file.name, properties);
+
     if (["MESSAGE", "USER"].includes(file.type)) delete file.description;
+
     console.log(`[CommandSystem] Loaded slash command: ${file.name}`.green);
     return file;
   });
+
   console.log("-".repeat(45).yellow);
+
   // Events
-  const eventFiles = await globPromise(`${process.cwd()}/src/events/*.js`);
+  const eventFiles = await glob(`${process.cwd()}/events/events/*.js`);
   eventFiles.forEach((value) => {
-    const file = require(value);
-    const eventName = value.split("/").pop().split(".")[0];
+    const filePath = path.resolve(value);
+    const file = require(filePath);
+    const eventName = path.basename(filePath, ".js");
+
     console.log(`[EventSystem] Loaded event: ${eventName}`.green);
-    require(value);
+    if (typeof file === "function") {
+      file(client);
+    }
   });
+
   console.log("-".repeat(45).yellow);
+
   // Slash Commands Register
-  client.on("ready", async () => {
-    // Register for all the guilds the bot is in
+  client.once("clientReady", async () => {
     await client.application.commands.set(arrayOfSlashCommands);
-    console.log(`[SlashCommandSystem] Registered ${client.slashCommands.size} slash commands`.green);
+    console.log(
+      `[SlashCommandSystem] Registered ${client.slashCommands.size} slash commands`.green
+    );
   });
-
-  // mongoose
-  // const mongooseConnectionString = process.env.mongooseConnectionString;
-  // if (!mongooseConnectionString) return;
-
-  // mongoose.connect(mongooseConnectionString).then(() => console.log("Connected to mongodb"));
 };
