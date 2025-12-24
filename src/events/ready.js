@@ -4,7 +4,7 @@ const { ActivityType } = require('discord.js');
 
 
 client.on("raw", d => client.lavalink.sendRawData(d));
-client.on("onReady", async () => {
+client.on("clientReady", async () => {
   await client.lavalink.init({ ...client.user });
   console.log("[LavaLink] Connected to Lavalink".green);
   console.log('-'.repeat(45).yellow);
