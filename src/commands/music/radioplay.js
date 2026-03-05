@@ -1,4 +1,4 @@
-const { EmbedBuilder, ComponentType, ActionRowBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle, ModalBuilder, MessageFlags  } = require("discord.js");
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle, ModalBuilder, MessageFlags  } = require("discord.js");
 const { processPlayResult, updatePlayer, addStopButton } = require("../../utilities/lavalink.js");
 const { loadChecks, playChecks } = require("../../utilities/checks.js");
 const { searchRadio } = require("../../utilities/radioApi.js");
@@ -50,7 +50,7 @@ client.on('interactionCreate', async (interaction) => {
       return;
     }
 
-    const limitedRadioResult = radioResult.slice(0, 25);
+    const limitedRadioResult = radioResult.slice(0, 25).filter(station => station.program && typeof station.program === 'string');
 
     const selectMenuOptions = limitedRadioResult.map(station => ({
       label: station.program,
