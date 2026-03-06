@@ -36,7 +36,7 @@ module.exports = {
   }
 };
 
-let selection;
+let radioStationCache = new Map();
 // Handle the modal submission and radio selection
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isModalSubmit() && interaction.customId === 'radioModal') {
@@ -52,9 +52,16 @@ client.on('interactionCreate', async (interaction) => {
 
     const limitedRadioResult = radioResult.slice(0, 25).filter(station => station.program && typeof station.program === 'string');
 
-    const selectMenuOptions = limitedRadioResult.map(station => ({
-      label: station.program,
-      value: station.url
+    // Cache stations with index-based IDs
+    const cacheKey = `${interaction.user.id}_${Date.now()}`;
+    radioStationCache.set(cacheKey, limitedRadioResult);
+
+    // Clean up old cache entries after 5 minutes
+    setTimeout(() => radioStationCache.delete(cacheKey), 300000);
+
+    const selectMenuOptions = limitedRadioResult.map((station, index) => ({
+      label: station.program.substring(0, 100),
+      value: `${cacheKey}_${index}`
     }));
 
     const selectMenu = new StringSelectMenuBuilder()
@@ -69,14 +76,26 @@ client.on('interactionCreate', async (interaction) => {
     const embed = new EmbedBuilder()
       .setColor('#FF0000')
       .setTitle('Please select a radio station')
-      .addFields({ name: 'Powered By:', value: '[FmStream](http://fmstream.org/)' })
+      .addFields({ name: 'Powered By:', value: '[Radio-Browser](https://www.radio-browser.info/)' })
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
   }
 
   if (interaction.isStringSelectMenu() && interaction.customId === 'radioSelect') {
-    selection = interaction.values[0];
+    const selectedValue = interaction.values[0];
+    const lastUnderscoreIndex = selectedValue.lastIndexOf('_');
+    const cacheKey = selectedValue.substring(0, lastUnderscoreIndex);
+    const index = parseInt(selectedValue.substring(lastUnderscoreIndex + 1));
+
+    const cachedStations = radioStationCache.get(cacheKey);
+
+    if (!cachedStations || !cachedStations[index]) {
+      await interaction.update({ content: 'Selection expired. Please try again.', components: [], embeds: [] });
+      return;
+    }
+
+    const selection = cachedStations[index].url;
 
     const player = interaction.client.lavalink.createPlayer({
       guildId: interaction.guild.id,
