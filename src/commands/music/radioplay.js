@@ -17,7 +17,6 @@ module.exports = {
       return;
     }
 
-    // Create the modal for inputting the radio name
     const modal = new ModalBuilder()
       .setTitle('Radio')
       .setCustomId('radioModal')
@@ -31,18 +30,15 @@ module.exports = {
         )
       );
 
-    // Show the modal to the user
     await interaction.showModal(modal);
   }
 };
 
 let radioStationCache = new Map();
-// Handle the modal submission and radio selection
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isModalSubmit() && interaction.customId === 'radioModal') {
     const radioName = interaction.fields.getTextInputValue('radioName');
 
-    // Search for radio stations based on the user's input
     const radioResult = await searchRadio(radioName);
 
     if (radioResult.length === 0) {
@@ -52,11 +48,9 @@ client.on('interactionCreate', async (interaction) => {
 
     const limitedRadioResult = radioResult.slice(0, 25).filter(station => station.program && typeof station.program === 'string');
 
-    // Cache stations with index-based IDs
     const cacheKey = `${interaction.user.id}_${Date.now()}`;
     radioStationCache.set(cacheKey, limitedRadioResult);
 
-    // Clean up old cache entries after 5 minutes
     setTimeout(() => radioStationCache.delete(cacheKey), 300000);
 
     const selectMenuOptions = limitedRadioResult.map((station, index) => ({
