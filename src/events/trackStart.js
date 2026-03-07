@@ -70,7 +70,7 @@ client.lavalink.on("trackStart", async (player, track) => {
                     (newSong) => {
                         console.log(`[Radio] Updated metadata for guild ${player.guildId}: ${newSong}`);
                     },
-                    60000
+                    10000
                 );
             }
         }
