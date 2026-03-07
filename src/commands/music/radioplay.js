@@ -1,7 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle, ModalBuilder, MessageFlags  } = require("discord.js");
 const { processPlayResult, updatePlayer, addStopButton } = require("../../utilities/lavalink.js");
 const { loadChecks, playChecks } = require("../../utilities/checks.js");
-const { searchRadio } = require("../../utilities/radioApi.js");
+const { searchRadio, getEnhancedRadioMetadata } = require("../../utilities/radioApi.js");
 const client = require("../..//index");
 
 
@@ -17,7 +17,6 @@ module.exports = {
       return;
     }
 
-    // Create the modal for inputting the radio name
     const modal = new ModalBuilder()
       .setTitle('Radio')
       .setCustomId('radioModal')
@@ -31,18 +30,15 @@ module.exports = {
         )
       );
 
-    // Show the modal to the user
     await interaction.showModal(modal);
   }
 };
 
-let selection;
-// Handle the modal submission and radio selection
+let radioStationCache = new Map();
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isModalSubmit() && interaction.customId === 'radioModal') {
     const radioName = interaction.fields.getTextInputValue('radioName');
 
-    // Search for radio stations based on the user's input
     const radioResult = await searchRadio(radioName);
 
     if (radioResult.length === 0) {
@@ -52,9 +48,14 @@ client.on('interactionCreate', async (interaction) => {
 
     const limitedRadioResult = radioResult.slice(0, 25).filter(station => station.program && typeof station.program === 'string');
 
-    const selectMenuOptions = limitedRadioResult.map(station => ({
-      label: station.program,
-      value: station.url
+    const cacheKey = `${interaction.user.id}_${Date.now()}`;
+    radioStationCache.set(cacheKey, limitedRadioResult);
+
+    setTimeout(() => radioStationCache.delete(cacheKey), 300000);
+
+    const selectMenuOptions = limitedRadioResult.map((station, index) => ({
+      label: station.program.substring(0, 100),
+      value: `${cacheKey}_${index}`
     }));
 
     const selectMenu = new StringSelectMenuBuilder()
@@ -69,14 +70,32 @@ client.on('interactionCreate', async (interaction) => {
     const embed = new EmbedBuilder()
       .setColor('#FF0000')
       .setTitle('Please select a radio station')
-      .addFields({ name: 'Powered By:', value: '[FmStream](http://fmstream.org/)' })
+      .addFields({ name: 'Powered By:', value: '[Radio-Browser](https://www.radio-browser.info/)' })
       .setTimestamp();
 
     await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
   }
 
   if (interaction.isStringSelectMenu() && interaction.customId === 'radioSelect') {
-    selection = interaction.values[0];
+    const selectedValue = interaction.values[0];
+    const lastUnderscoreIndex = selectedValue.lastIndexOf('_');
+    const cacheKey = selectedValue.substring(0, lastUnderscoreIndex);
+    const index = parseInt(selectedValue.substring(lastUnderscoreIndex + 1));
+
+    const cachedStations = radioStationCache.get(cacheKey);
+
+    if (!cachedStations || !cachedStations[index]) {
+      await interaction.update({ content: 'Selection expired. Please try again.', components: [], embeds: [] });
+      return;
+    }
+
+    const station = cachedStations[index];
+    const selection = station.url;
+    const stationName = station.program;
+
+    await interaction.deferReply({ ephemeral: false });
+
+    const metadata = await getEnhancedRadioMetadata(selection, stationName);
 
     const player = interaction.client.lavalink.createPlayer({
       guildId: interaction.guild.id,
@@ -84,6 +103,8 @@ client.on('interactionCreate', async (interaction) => {
       textChannelId: interaction.channel.id,
       selfDeaf: true
     });
+
+    player.radioMetadata = metadata;
 
     const result = await player.search(selection, interaction.member);
     if (!loadChecks(interaction, result)) {
@@ -93,7 +114,7 @@ client.on('interactionCreate', async (interaction) => {
     if (!player.connected) {
       if (!interaction.member.voice.channel) {
         await player.destroy();
-        await interaction.update({ content: 'You need to be in a voice channel to use this command.', components: [], embeds: [], ephemeral: true });
+        await interaction.editReply({ content: 'You need to be in a voice channel to use this command.', components: [], embeds: [] });
         return;
       }
       await player.connect();
@@ -101,8 +122,23 @@ client.on('interactionCreate', async (interaction) => {
 
     const embed = await processPlayResult(player, result, interaction.client, "Radio");
 
+    if (metadata.stationName) {
+      embed.addFields({ name: '🎙️ Station:', value: metadata.stationName, inline: true });
+    }
+    if (metadata.currentSong) {
+      embed.addFields({ name: '🎵 Now Playing:', value: metadata.currentSong, inline: true });
+    }
+    if (metadata.stationDescription) {
+      embed.addFields({ name: '📝 Description:', value: metadata.stationDescription.substring(0, 1024) });
+    }
+    if (metadata.bitrate) {
+      embed.addFields({ name: '📊 Bitrate:', value: `${metadata.bitrate} kbps`, inline: true });
+    }
+    if (metadata.audioCodec) {
+      embed.addFields({ name: '🔊 Codec:', value: metadata.audioCodec, inline: true });
+    }
+
     updatePlayer(player, interaction.guild.id, interaction.client);
-    await interaction.deferReply({ ephemeral: false })
     const message = await interaction.editReply({ embeds: [embed], components: [] });
     await addStopButton(message, player);
   }
