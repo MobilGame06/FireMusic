@@ -26,7 +26,6 @@ async function processPlayResult(player, result, client, radioName = null) {
   await player.queue.add(isTrack ? result.tracks[0] : result.tracks);
   if (!player.playing && !player.paused) { player.play(); }
 
-  // Use radioName if provided and if title/author are not available
   const title = info.title !== 'Unknown title' ? info.title : (radioName || 'Unknown Title');
   const author = info.author !== 'Unknown artist' ? info.author : (radioName || 'Unknown Artist');
 

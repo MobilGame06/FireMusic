@@ -38,9 +38,9 @@ module.exports = {
       await player.connect();
     }
 
-    const embed = await processPlayResult(player, result, interaction.client); // Übergeben Sie interaction.client als Argument
+    const embed = await processPlayResult(player, result, interaction.client);
 
-    updatePlayer(player, interaction.guild.id, interaction.client); // Übergeben Sie interaction.client als Argument
+    updatePlayer(player, interaction.guild.id, interaction.client);
     const message = await interaction.editReply({ embeds: [embed] });
     await addMusicControls(message, player);
 
