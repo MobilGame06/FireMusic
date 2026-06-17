@@ -37,12 +37,14 @@ module.exports = {
 let radioStationCache = new Map();
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isModalSubmit() && interaction.customId === 'radioModal') {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
     const radioName = interaction.fields.getTextInputValue('radioName');
 
     const radioResult = await searchRadio(radioName);
 
     if (radioResult.length === 0) {
-      await interaction.reply({ content: "No radio stations found.", flags: MessageFlags.Ephemeral});
+      await interaction.editReply({ content: "No radio stations found." });
       return;
     }
 
@@ -73,7 +75,7 @@ client.on('interactionCreate', async (interaction) => {
       .addFields({ name: 'Powered By:', value: '[Radio-Browser](https://www.radio-browser.info/)' })
       .setTimestamp();
 
-    await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+    await interaction.editReply({ embeds: [embed], components: [row] });
   }
 
   if (interaction.isStringSelectMenu() && interaction.customId === 'radioSelect') {
@@ -93,7 +95,7 @@ client.on('interactionCreate', async (interaction) => {
     const selection = station.url;
     const stationName = station.program;
 
-    await interaction.deferReply({ ephemeral: false });
+    await interaction.deferReply();
 
     const metadata = await getEnhancedRadioMetadata(selection, stationName);
 

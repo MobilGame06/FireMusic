@@ -8,7 +8,7 @@ client.on("interactionCreate", async (interaction) => {
 
     // Check if the command needs deferment
     if (cmd.deferReply !== false) {
-      await interaction.deferReply({ ephemeral: false }).catch(() => { });
+      await interaction.deferReply().catch(() => { });
     }
 
     const args = [];
@@ -28,7 +28,7 @@ client.on("interactionCreate", async (interaction) => {
 
   // Context Menu Handling
   if (interaction.isContextMenuCommand()) {
-    await interaction.deferReply({ ephemeral: false });
+    await interaction.deferReply();
     const command = client.slashCommands.get(interaction.commandName);
     if (command) command.run(client, interaction);
   }
