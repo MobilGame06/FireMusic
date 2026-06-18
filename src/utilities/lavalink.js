@@ -26,15 +26,15 @@ async function processPlayResult(player, result, client, radioName = null) {
   await player.queue.add(isTrack ? result.tracks[0] : result.tracks);
   if (!player.playing && !player.paused) { player.play(); }
 
-  const title = info.title !== 'Unknown title' ? info.title : (radioName || 'Unknown Title');
-  const author = info.author !== 'Unknown artist' ? info.author : (radioName || 'Unknown Artist');
+  const title = (info.title && info.title !== 'Unknown title') ? info.title : (radioName || 'Unknown Title');
+  const author = (info.author && info.author !== 'Unknown artist') ? info.author : (radioName || 'Unknown Artist');
 
   return new EmbedBuilder()
     .setAuthor({ name: 'Added to queue.', iconURL: (result.tracks[0].requester).displayAvatarURL() })
     .setTitle(title)
     .setColor("#ff0000")
-    .setURL(info.uri)
-    .setThumbnail(isTrack ? result.tracks[0].info.artworkUrl : result.playlist.thumbnail)
+    .setURL(info.uri || null)
+    .setThumbnail((isTrack ? result.tracks[0].info.artworkUrl : result.playlist.thumbnail) || null)
     .addFields(isTrack ? [
       { name: 'Duration', value: durationOrLive(info), inline: true },
       { name: 'Author', value: author, inline: true },
